@@ -274,25 +274,38 @@ function MapModal({ visible, initialLat, initialLng, onConfirm, onClose }: MapMo
 
         {/* Bottom action bar */}
         <View style={[ms.bottomBar, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
-          <TouchableOpacity style={ms.locateBtn} onPress={useMyLocation} disabled={locating}>
+          <TouchableOpacity
+            style={ms.currentLocationBtn}
+            onPress={useMyLocation}
+            disabled={locating}
+            activeOpacity={0.8}
+          >
             {locating
               ? <ActivityIndicator size="small" color={colors.primary} />
-              : <Ionicons name="locate" size={20} color={colors.primary} />}
-          </TouchableOpacity>
-          <View style={{ flex: 1, marginHorizontal: 12 }}>
-            <Text style={ms.coordText}>
-              {pendingLat.toFixed(5)}, {pendingLng.toFixed(5)}
+              : <Ionicons name="locate" size={18} color={colors.primary} />}
+            <Text style={ms.currentLocationText}>
+              {locating ? 'Getting location…' : 'Use my current location'}
             </Text>
-            <Text style={ms.hintText}>Tap map or drag pin to adjust</Text>
-          </View>
-          <TouchableOpacity
-            style={ms.confirmBtn}
-            onPress={() => onConfirm(pendingLat, pendingLng)}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="checkmark" size={20} color="#fff" />
-            <Text style={ms.confirmText}>Confirm</Text>
           </TouchableOpacity>
+
+          {/* Coords + confirm row */}
+          <View style={ms.confirmRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={ms.coordText}>
+                {pendingLat.toFixed(5)}, {pendingLng.toFixed(5)}
+              </Text>
+              <Text style={ms.hintText}>Tap map or drag pin to adjust</Text>
+            </View>
+            <TouchableOpacity
+              style={ms.confirmBtn}
+              onPress={() => onConfirm(pendingLat, pendingLng)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="checkmark" size={20} color="#fff" />
+              <Text style={ms.confirmText}>Confirm</Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
       </View>
     </Modal>
@@ -685,24 +698,34 @@ const ms = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   bottomBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     ...shadow.md,
   },
-  locateBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  currentLocationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     borderWidth: 1.5,
     borderColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: radius.md,
+    paddingVertical: 11,
+    marginBottom: 10,
     backgroundColor: colors.primaryBg,
+  },
+  currentLocationText: {
+    color: colors.primary,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  confirmRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   coordText: {
     fontSize: 13,

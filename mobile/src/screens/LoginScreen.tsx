@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
@@ -242,10 +243,15 @@ export default function LoginScreen() {
       <View style={s.illustrationWrap}>
         <View style={s.illustrationBg} />
         <View style={s.logoContainer}>
-          <View style={s.logoBox}>
-            <Text style={s.logoEmoji}>🍽️</Text>
-          </View>
-          <Text style={s.appName}>FoodMitra</Text>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={s.logoImage}
+            resizeMode="contain"
+          />
+          <Text style={s.appName}>
+            <Text style={{ color: colors.text }}>Food</Text>
+            <Text style={{ color: colors.primary }}>Mitra</Text>
+          </Text>
           <Text style={s.tagline}>Order food you love</Text>
         </View>
       </View>
@@ -375,7 +381,7 @@ export default function LoginScreen() {
                     label="Full name"
                     value={fullName}
                     onChange={setFullName}
-                    placeholder="John Doe"
+                    placeholder="Omkar Ghodekar"
                   />
 
                   <PhoneField
@@ -403,6 +409,10 @@ export default function LoginScreen() {
                     value={anniversaryDate}
                     onChange={setAnniversaryDate}
                   />
+
+                  <Text style={s.specialOffersHint}>
+                    (Optional) Share these dates to receive special offers and make your special moments even more special with FoodMitra! 🎉❤️
+                  </Text>
 
                   {error ? <ErrorBox msg={error} /> : null}
 
@@ -692,15 +702,19 @@ const s = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderBottomLeftRadius: 40, borderBottomRightRadius: 40,
   },
-  logoContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 30 },
-  logoBox: {
-    width: 70, height: 70, borderRadius: 20,
-    backgroundColor: colors.primary,
-    justifyContent: 'center', alignItems: 'center',
-    ...shadow.lg,
+  logoContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 20 },
+  logoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
   },
-  logoEmoji: { fontSize: 34 },
-  appName: { fontSize: 26, fontWeight: '800', color: colors.text, marginTop: 12, letterSpacing: -0.5 },
+  appName: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: colors.text,
+    marginTop: 10,
+    letterSpacing: 0.5,
+  },
   tagline: { fontSize: 13, color: colors.textSecondary, marginTop: 3 },
 
   // Form scroll area
@@ -773,6 +787,17 @@ const s = StyleSheet.create({
   // Terms
   terms: { fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 24, lineHeight: 16 },
   termsLink: { color: colors.primary, fontWeight: '500' },
+
+  // Special offers hint
+  specialOffersHint: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    lineHeight: 16,
+    marginTop: -6,
+    marginBottom: 10,
+    paddingHorizontal: 2,
+    fontStyle: 'italic',
+  },
 });
 
 // Field-level styles

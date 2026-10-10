@@ -9,7 +9,7 @@
         "backgroundColor": "#FFFFFF"
       }
     },
-    "icon": "./assets/icon.png",
+    "icon": "./assets/splash.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
