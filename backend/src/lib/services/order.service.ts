@@ -34,9 +34,9 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
   return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
-// Generate a human-friendly order code in the format YYMMDD-XXXX
-// (e.g. "260929-7K3P") where YYMMDD is the order date and XXXX is a 4-char
-// alphanumeric suffix using unambiguous chars (no 0/O/1/I/L).
+// Generate a human-friendly order code in the format YYMMDD-####
+// (e.g. "261010-0347") where YYMMDD is the order date and #### is a 4-digit
+// numeric suffix (0000-9999).
 function genShortCode(): string {
   const now = new Date();
   const yy = String(now.getUTCFullYear()).slice(-2);
@@ -44,9 +44,7 @@ function genShortCode(): string {
   const dd = String(now.getUTCDate()).padStart(2, '0');
   const datePart = `${yy}${mm}${dd}`;
 
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  let suffix = '';
-  for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  const suffix = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 
   return `${datePart}-${suffix}`;
 }

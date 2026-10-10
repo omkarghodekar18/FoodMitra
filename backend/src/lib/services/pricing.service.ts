@@ -84,6 +84,9 @@ async function getTierDeliveryFee(distanceKm: number): Promise<{ fee: number; ti
 
 /**
  * Haversine distance in km between two lat/lng points.
+ * Multiplied by 1.35 to approximate actual road distance (straight-line distance
+ * underestimates real driving distance by ~35% due to road curvature, turns, and
+ * non-direct routing — this is a standard heuristic used by delivery platforms).
  */
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -95,7 +98,9 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
       Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLng / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  const straightLineKm = R * c;
+  // Approximate road distance: straight-line × 1.35 (35% longer due to road layout)
+  return straightLineKm * 1.35;
 }
 
 export class PricingService {

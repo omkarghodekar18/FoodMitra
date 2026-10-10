@@ -1285,7 +1285,6 @@ function OrderDetailsDialog({ order, onClose }: { order: OrderListItem; onClose:
  <TableHeader>
  <TableRow>
  <TableHead className="text-xs">Item</TableHead>
- <TableHead className="text-xs">Veg</TableHead>
  <TableHead className="text-xs text-right">Qty</TableHead>
  <TableHead className="text-xs text-right">Unit</TableHead>
  <TableHead className="text-xs text-right">Subtotal</TableHead>
@@ -1295,11 +1294,6 @@ function OrderDetailsDialog({ order, onClose }: { order: OrderListItem; onClose:
  {details.items.map((it) => (
  <TableRow key={it.id}>
  <TableCell className="text-sm font-medium text-slate-800">{it.itemNameSnapshot}</TableCell>
- <TableCell>
- <span className={`inline-block w-3 h-3 border-2 rounded-sm ${it.isVeg ? 'border-green-500' : 'border-red-500'}`}>
- <span className={`block w-1.5 h-1.5 rounded-full m-auto mt-0.5 ${it.isVeg ? 'bg-green-500' : 'bg-red-500'}`} />
- </span>
- </TableCell>
  <TableCell className="text-xs text-right">{it.quantity}</TableCell>
  <TableCell className="text-xs text-right">₹{it.itemPriceSnapshot}</TableCell>
  <TableCell className="text-xs text-right font-medium">₹{it.subtotal}</TableCell>
