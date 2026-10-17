@@ -146,13 +146,9 @@ export class PricingService {
       const rLng = restaurant.longitude;
       if (rLat != null && rLng != null && addr.latitude != null && addr.longitude != null) {
         deliveryDistanceKm = round2(haversineKm(rLat, rLng, addr.latitude, addr.longitude));
-        if (deliveryDistanceKm > 50) {
-          throw new AppError(
-            'DELIVERY_DISTANCE_TOO_LONG',
-            `Delivery distance is too long (${deliveryDistanceKm} km). We only deliver within 50 km.`,
-            400,
-          );
-        }
+        // NOTE: no max-distance cap. If the distance exceeds every configured tier,
+        // getTierDeliveryFee() falls back to the LAST tier's fee (the most expensive
+        // one) so the order still goes through instead of erroring out.
         const tier = await getTierDeliveryFee(deliveryDistanceKm);
         if (tier) {
           deliveryFee = round2(tier.fee);
