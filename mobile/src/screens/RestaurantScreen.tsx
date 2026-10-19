@@ -170,13 +170,14 @@ export default function RestaurantScreen({ route, navigation }: any) {
     return categories
       .map((cat) => ({
         ...cat,
-        data: q
-          ? cat.items.filter(
-              (it) =>
-                it.name.toLowerCase().includes(q) ||
-                (it.description ?? '').toLowerCase().includes(q),
-            )
-          : cat.items,
+        data: cat.items
+          .filter((it) => it.availability === 'AVAILABLE')
+          .filter(
+            (it) =>
+              !q ||
+              it.name.toLowerCase().includes(q) ||
+              (it.description ?? '').toLowerCase().includes(q),
+          ),
       }))
       .filter((cat) => cat.data.length > 0);
   }, [categories, searchQuery]);

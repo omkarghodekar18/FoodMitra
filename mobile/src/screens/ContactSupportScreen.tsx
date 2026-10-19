@@ -13,8 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, shadow } from '../theme/colors';
 
-const SUPPORT_PHONE = '+918446855637';
-const SUPPORT_PHONE_DISPLAY = '+91 8446855637';
+const SUPPORT_PHONE = '+919185233235';
+const SUPPORT_PHONE_DISPLAY = '+91 9185233235';
 const SUPPORT_EMAIL = 'omkarghodekar03@gmail.com';
 
 export default function ContactSupportScreen({ navigation }: any) {
