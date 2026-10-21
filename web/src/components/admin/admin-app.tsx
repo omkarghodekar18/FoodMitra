@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import {
  LayoutDashboard, Store, Users, ShoppingCart, CreditCard, Bell, Tag,
- CheckCircle, XCircle, Pause, Play, Shield, Ban, RotateCcw, Eye, Truck, Cake, Heart, Image, BarChart3, Plus, UtensilsCrossed, MapPin, Pencil, Trash2, ArrowLeft, RefreshCw, X,
+ CheckCircle, XCircle, Pause, Play, Shield, Ban, RotateCcw, Eye, Truck, Cake, Heart, Image, BarChart3, Plus, UtensilsCrossed, MapPin, Pencil, Trash2, ArrowLeft, RefreshCw, X, ClipboardList,
 } from 'lucide-react';
 import { DashboardShell, PageHeader, StatCard, EmptyState, type NavItem } from '@/components/shared/dashboard-shell';
 import { LocationPickerModal } from '@/components/shared/location-picker-modal';
@@ -121,24 +121,29 @@ export function AdminApp() {
  // Lifted to AdminApp so the menu view can render as a full page (replacing the section content)
  // instead of as a dialog overlay. Set by AdminRestaurants' Menu button; cleared by the back button.
  const [menuTarget, setMenuTarget] = useState<RestaurantListItem | null>(null);
+ // Lifted to AdminApp so the customer-orders view renders as a full page (replacing the section
+ // content) instead of a cramped dialog. Set by AdminCustomers' View Orders button; cleared by Back.
+ const [ordersTarget, setOrdersTarget] = useState<CustomerListItem | null>(null);
 
  return (
  <DashboardShell
  title="FoodMitra"
  navItems={NAV_ITEMS}
- activeId={menuTarget ? 'restaurants' : section}
- onSelect={(id) => { setMenuTarget(null); setSection(id as SectionId); }}
+ activeId={(menuTarget || ordersTarget) ? 'customers' : section}
+ onSelect={(id) => { setMenuTarget(null); setOrdersTarget(null); setSection(id as SectionId); }}
  headerColor="bg-slate-800"
  roleLabel="Admin Console"
- pageTitleOverride={menuTarget ? 'Menu management' : undefined}
+ pageTitleOverride={ordersTarget ? 'Customer orders' : (menuTarget ? 'Menu management' : undefined)}
  >
  {menuTarget ? (
  <AdminMenuManagement restaurant={menuTarget} onClose={() => setMenuTarget(null)} />
+ ) : ordersTarget ? (
+ <AdminCustomerOrders customer={ordersTarget} onClose={() => setOrdersTarget(null)} />
  ) : (
  <>
  {section === 'dashboard' && <AdminDashboard />}
  {section === 'restaurants' && <AdminRestaurants onOpenMenu={(r) => setMenuTarget(r)} />}
- {section === 'customers' && <AdminCustomers />}
+ {section === 'customers' && <AdminCustomers onOpenOrders={(c) => setOrdersTarget(c)} />}
  {section === 'orders' && <AdminOrders />}
  {section === 'payments' && <AdminPayments />}
  {section === 'deliveryFees' && <AdminDeliveryFees />}
@@ -923,7 +928,7 @@ function AdminMenuManagement({ restaurant, onClose }: { restaurant: RestaurantLi
  );
 }
 
-function AdminCustomers() {
+function AdminCustomers({ onOpenOrders }: { onOpenOrders: (c: CustomerListItem) => void }) {
  const [items, setItems] = useState<CustomerListItem[]>([]);
  const [total, setTotal] = useState(0);
  const [loading, setLoading] = useState(true);
@@ -998,6 +1003,10 @@ function AdminCustomers() {
  <TableCell>{c.isActive ? <Badge variant="secondary" className="text-green-700 bg-green-50">Active</Badge> : <Badge variant="secondary" className="text-red-700 bg-red-50">Blocked</Badge>}</TableCell>
  <TableCell className="text-xs">{new Date(c.createdAt).toLocaleDateString()}</TableCell>
  <TableCell className="text-right">
+ <div className="flex items-center justify-end gap-1 flex-wrap">
+ <Button size="sm" variant="outline" className="h-7" onClick={() => onOpenOrders(c)}>
+ <ClipboardList className="w-3 h-3 mr-1" /> View Orders
+ </Button>
  {c.isActive ? (
  <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700" onClick={() => toggle(c.id, true)}>
  <Ban className="w-4 h-4 mr-1" /> Block
@@ -1007,6 +1016,7 @@ function AdminCustomers() {
  <Shield className="w-4 h-4 mr-1" /> Unblock
  </Button>
  )}
+ </div>
  </TableCell>
  </TableRow>
  ))}
@@ -1032,6 +1042,93 @@ function AdminCustomers() {
  {searching && total > 0 && (
  <p className="text-xs text-slate-500 text-center">Showing all {total} matching customers</p>
  )}
+ </div>
+ );
+}
+
+/**
+ * Full-page view of a single customer's order history.
+ * Replaces the customers list (same pattern as AdminMenuManagement) so the table
+ * has the full page width — no cramped dialog.
+ */
+function AdminCustomerOrders({ customer, onClose }: { customer: CustomerListItem; onClose: () => void }) {
+ const [items, setItems] = useState<OrderListItem[]>([]);
+ const [loading, setLoading] = useState(true);
+ const [refreshing, setRefreshing] = useState(false);
+ const [viewing, setViewing] = useState<OrderListItem | null>(null);
+
+ const load = (silent = false) => {
+ if (silent) setRefreshing(true); else setLoading(true);
+ const params = new URLSearchParams({ customerId: customer.id, pageSize: '500' });
+ api.get<{ items: OrderListItem[]; total: number }>(`/api/v1/admin/orders?${params}`)
+ .then((r) => setItems(r.items))
+ .catch((e) => toastApiError(e, 'Failed to load orders'))
+ .finally(() => { setLoading(false); setRefreshing(false); });
+ };
+
+ useEffect(() => { load(false); }, [customer.id]);
+
+ const totalSpent = items.reduce((s, o) => s + o.totalAmount, 0);
+
+ return (
+ <div className="space-y-4">
+ <div className="flex items-center justify-between gap-3 flex-wrap">
+ <div>
+ <Button variant="ghost" size="sm" className="mb-2 -ml-2 text-slate-600" onClick={onClose}>
+ <ArrowLeft className="w-4 h-4 mr-1" /> Back to customers
+ </Button>
+ <PageHeader
+ title={`Orders — ${customer.customerProfile?.fullName || customer.phone}`}
+ subtitle={`${customer.phone}${customer.email ? ` · ${customer.email}` : ''} · ${items.length} order${items.length === 1 ? '' : 's'} · ₹${totalSpent.toLocaleString('en-IN')} total`}
+ />
+ </div>
+ <Button variant="outline" size="sm" onClick={() => load(true)} disabled={refreshing}>
+ <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+ </Button>
+ </div>
+
+ {loading ? (
+ <div className="text-sm text-slate-500">Loading orders…</div>
+ ) : items.length === 0 ? (
+ <EmptyState title="No orders yet" message="This customer hasn't placed any orders." />
+ ) : (
+ <div className={`border border-slate-200 rounded-lg overflow-x-auto bg-white transition-opacity ${refreshing ? 'opacity-60' : ''}`}>
+ <Table>
+ <TableHeader>
+ <TableRow>
+ <TableHead>Code</TableHead>
+ <TableHead>Restaurant</TableHead>
+ <TableHead>Status</TableHead>
+ <TableHead>Payment</TableHead>
+ <TableHead className="text-right">Total</TableHead>
+ <TableHead className="text-center">Items</TableHead>
+ <TableHead>Date</TableHead>
+ <TableHead className="text-right">Actions</TableHead>
+ </TableRow>
+ </TableHeader>
+ <TableBody>
+ {items.map((o) => (
+ <TableRow key={o.id}>
+ <TableCell className="font-mono text-xs">{o.shortCode}</TableCell>
+ <TableCell className="text-sm">{o.restaurant.name}</TableCell>
+ <TableCell><StatusBadge status={o.orderStatus} /></TableCell>
+ <TableCell><PaymentBadge status={o.paymentStatus} /></TableCell>
+ <TableCell className="text-sm font-medium text-right">₹{o.totalAmount.toLocaleString('en-IN')}</TableCell>
+ <TableCell className="text-xs text-center">{o.items.length}</TableCell>
+ <TableCell className="text-xs text-slate-500">{new Date(o.createdAt).toLocaleString()}</TableCell>
+ <TableCell className="text-right">
+ <Button size="sm" variant="outline" className="h-7" onClick={() => setViewing(o)}>
+ <Eye className="w-3 h-3 mr-1" /> View
+ </Button>
+ </TableCell>
+ </TableRow>
+ ))}
+ </TableBody>
+ </Table>
+ </div>
+ )}
+
+ {viewing && <OrderDetailsDialog order={viewing} onClose={() => setViewing(null)} />}
  </div>
  );
 }
